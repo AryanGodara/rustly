@@ -46,5 +46,5 @@ fn main() {
     let shortened = shortened_url.shortened_url.clone();
     let res = map.get(&shortened).unwrap();
     println!("{} => {}", shortened, res);
-    assert_eq!(res, &shortened_url.url);
+    assert_eq!(res, &shortened_url.url, "Now testing the reverse of shortened to original url", );
 }
