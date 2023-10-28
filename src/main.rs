@@ -1,8 +1,5 @@
 use std::collections::HashMap;
-
-// Import the rand crate
 use rand::{self, Rng};
-// Import sha256
 // use digest::Digest;
 // use sha2::Sha256;
 
@@ -24,13 +21,6 @@ struct Record {
 
 fn generate_shortened_url(map: &mut HashMap<String,String>, url: &str) -> Record {
     const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    
-    // Run the loop for n times
-    // let x = (0..length); // Range<usize>
-    // let hasher = Sha256::default();
-    // hasher.update(url);
-    // let res = hasher.finalize();
-    // let shortened_url = format!("{:x}", res);
 
     let shortened_url = (0..url.len())
         .map(|_| { // Closure with no arguments
