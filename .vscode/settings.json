@@ -1,5 +1,6 @@
 {
     "rust-analyzer.linkedProjects": [
-        "./hello-rocket/Cargo.toml"
+        "./rustly/Cargo.toml",
+        "./Cargo.toml"
     ]
 }
