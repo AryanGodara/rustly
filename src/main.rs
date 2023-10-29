@@ -4,15 +4,17 @@ extern crate rocket;
 extern crate harsh;
 
 use std::sync::RwLock;
+use crate::appstate::AppState;
 use rocket::State;
 use rocket::form::Form;
 use rocket::response::Redirect;
-use rocket::request::FromRequest;
-use rocket::request::{self, Request};
-use rocket::outcome::Outcome;
+// use rocket::request::FromRequest;
+// use rocket::request::{self, Request};
+// use rocket::outcome::Outcome;
 
 mod repository;
 mod shortener;
+mod appstate;
 use repository::Repository;
 
 #[derive(FromForm, Debug)]
@@ -20,15 +22,15 @@ struct Url {
     url: String,
 }
 
-#[rocket::async_trait]
-impl<'a> FromRequest<'a> for State<RwLock<Repository>> {
-    type Error = ();
+// #[rocket::async_trait]
+// impl<'a> FromRequest<'a> for State<RwLock<Repository>> {
+//     type Error = ();
 
-    fn from_request(request: &'a Request<'_>) -> request::Outcome<Self, Self::Error> {
-        let state = request.guard::<State<RwLock<Repository>>>()?;
-        Outcome::Success(state)
-    }
-}
+//     fn from_request(request: &'a Request<'_>) -> request::Outcome<Self, Self::Error> {
+//         let state = request.guard::<State<RwLock<Repository>>>()?;
+//         Outcome::Success(state)
+//     }
+// }
 
 #[get("/")]
 fn index() -> &'static str {
@@ -46,7 +48,7 @@ fn index() -> &'static str {
 }
 
 #[get("/<id>")]
-fn lookup(repo: State<RwLock<Repository>>,id: &str) -> Result<Redirect, &'static str> {
+fn lookup(state &AppState ,id: &str) -> Result<Redirect, &'static str> {
     match repo.read().unwrap().lookup(id) {
         Some(url) => Ok(Redirect::permanent(url)),
         _ => Err("Requested ID was not found.\n")
@@ -54,7 +56,7 @@ fn lookup(repo: State<RwLock<Repository>>,id: &str) -> Result<Redirect, &'static
 }
 
 #[post("/", data = "<url_form>")]
-fn shorten(repo: State<RwLock<Repository>>,url_form: Form<Url>) -> Result<String, String> {
+fn shorten(state &AppState,url_form: Form<Url>) -> Result<String, String> {
     let ref url = url_form.url;
     let mut repo = repo.write().unwrap();
     let id = repo.store(url);
@@ -63,6 +65,9 @@ fn shorten(repo: State<RwLock<Repository>>,url_form: Form<Url>) -> Result<String
 
 #[launch]
 fn rocket() -> _ {
+    let repository = RwLock::new(Repository::new());
+    let app_state = AppState::new(repository);
+
     rocket::build()
         .manage(RwLock::new(Repository::new()))
         .mount("/", routes![index, lookup, shorten])
